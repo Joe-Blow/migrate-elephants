@@ -2,11 +2,9 @@
 
 ## TLDR;
 
-If you do not like ORMS.
+If you do not like ORMS. If you do not like migration tools that force you to have a million migration files, but keeping everying synced without one is a PITA.
 
-If you do not like migration tools that force you to have a million migration files, but keeping everying synced without one is a PITA.
-
-You might like this little tool.
+Then you might like this little tool.
 
 ## What does it do
 
@@ -21,6 +19,8 @@ Currently this tool only works with Postgres. It also does not support many of t
 ## Installation
 
 `npm install -g migrate-elephants`
+
+Once I get this published on npm that is...
 
 ## Usage
 
