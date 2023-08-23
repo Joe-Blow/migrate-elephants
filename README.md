@@ -8,7 +8,7 @@ If you do not like migration tools that force you to have a million migration fi
 
 migrate-elephants cli takes a path to a SQL file and a Postgres database url. It compares the SQL file to the DB and essentially diffs the two. The idea here is that you have one setup file that is the "source of truth" for your DB. With this tool you can easily check your local, staging, testing and production DBs against the "source of truth"d.
 
-This tool will check types on columns as well as most constraints like UNIQUE and NOT NULL. There are some weird edge cases with bigserial and bigint in pgsql-parser, the parser I used to parse the SQL.
+This tool will check that columns exist, check types on columns and most constraints like UNIQUE and NOT NULL. There are some weird edge cases with bigserial and bigint and primary key in pgsql-parser that I have not had the time to get to the bottom of.
 
 Sample output:
 

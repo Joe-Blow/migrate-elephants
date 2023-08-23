@@ -85,7 +85,7 @@ for (let row of ast) {
   const schema = row.RawStmt.stmt.CreateSchemaStmt;
   const extention = row.RawStmt.stmt.CreateExtensionStmt;
 
-  if (table) {
+   if (table) {
     let tableOk = true;
     totalTables++;
 
@@ -102,20 +102,9 @@ for (let row of ast) {
       console.log(chalk.red.bold(` ${figures.cross} Table ${schemaName}.${tableName} does not exist`));
       tableOk = false;
     } else {
-      for (let column of table.tableElts) {
-        if (column.Constraint) {
-          // need to handle multi column constraints
-          continue;
-        }
-        const columnExists = dbTable.rows.find(c => c.column_name === column.ColumnDef.colname);
-        if (!columnExists) {
-          console.log(
-            chalk.red.bold(
-              ` ${figures.cross} Column ${column.ColumnDef.colname} on ${schemaName}.${tableName} is missing on the db`
-            )
-          );
-          tableOk = false;
-        }
+      const colsExist = allColumnsExistDb(table, dbTable, schemaName, tableName);
+      if (!colsExist) {
+        tableOk = false;
       }
 
       for (let column of dbTable.rows) {
@@ -130,39 +119,9 @@ for (let row of ast) {
           continue;
         }
 
-        let constraints = columnExists.ColumnDef.constraints;
-        if (constraints) {
-          constraints = constraints.filter(
-            c => c.Constraint.contype !== "CONSTR_DEFAULT" && c.Constraint.contype !== "CONSTR_FOREIGN"
-          );
-
-          let dbConstraints = await db.query(
-            `SELECT *
-              FROM information_schema.table_constraints tc
-                INNER JOIN information_schema.constraint_column_usage cu
-                ON cu.constraint_name = tc.constraint_name
-              WHERE tc.table_name = $1 AND cu.column_name = $2`,
-            [tableName, column.column_name]
-          );
-          dbConstraints = dbConstraints.rows;
-
-          for (let constraint of constraints) {
-            let exists = dbConstraints.find(c => constraint.Constraint.contype === contraintMap[c.constraint_type]);
-
-            if (!exists) {
-              if (constraint.Constraint.contype === "CONSTR_NOTNULL" && column.is_nullable === "NO") {
-                continue;
-              }
-
-              console.log(
-                chalk.yellowBright.bold(
-                  ` ${figures.warning} Constraint ${constraint.Constraint.contype} does not exist on ${schemaName}.${tableName} for column ${column.column_name}`
-                )
-              );
-
-              tableOk = false;
-            }
-          }
+        const contraintsOk = await checkColumnConstraints(columnExists.ColumnDef.constraints, contraintMap, column, schemaName, tableName);
+        if (!contraintsOk) {
+          tableOk = false;
         }
 
         let types = columnExists.ColumnDef?.typeName?.names.filter(x => x.String.str !== "pg_catalog");
@@ -170,6 +129,7 @@ for (let row of ast) {
         const dbColType = column.data_type;
 
         // this a hack but who cares
+        // either I am an idiot or the parser cannot decide which type to go with on primary key columns
         if (shouldBeType === "bigint" || shouldBeType === "bigserial" || shouldBeType === "int8") {
           continue;
         }
@@ -231,3 +191,60 @@ console.log(chalk.blue.bold(` ${figures.info} ${nExtensions} extentions checked`
 console.log(chalk.green.bold(` ${figures.tick} ${tablesOK} tables ok`));
 console.log(chalk.green.bold(` ${figures.tick} ${schemasOk} schemas ok`));
 console.log(chalk.green.bold(` ${figures.tick} ${extentionsOk} extentions ok\n`));
+
+function allColumnsExistDb(table, dbTable, schemaName, tableName) {
+  for (let column of table.tableElts) {
+    if (column.Constraint) {
+      // need to handle multi column constraints
+      continue;
+    }
+    const columnExists = dbTable.rows.find(c => c.column_name === column.ColumnDef.colname);
+    if (!columnExists) {
+      console.log(
+        chalk.red.bold(
+          ` ${figures.cross} Column ${column.ColumnDef.colname} on ${schemaName}.${tableName} is missing on the db`
+        )
+      );
+      return false;
+    }
+  }
+  return true;
+}
+
+async function checkColumnConstraints(constraints, contraintMap, column, schemaName, tableName) {
+  if (constraints) {
+    // ignore default and foreign key constraints for now
+    constraints = constraints.filter(
+      c => c.Constraint.contype !== "CONSTR_DEFAULT" && c.Constraint.contype !== "CONSTR_FOREIGN"
+    );
+
+    let dbConstraints = await db.query(
+      `SELECT * FROM information_schema.table_constraints tc
+                INNER JOIN information_schema.constraint_column_usage cu
+                ON cu.constraint_name = tc.constraint_name
+              WHERE tc.table_name = $1 AND cu.column_name = $2`,
+      [tableName, column.column_name]
+    );
+    dbConstraints = dbConstraints.rows;
+
+    for (let constraint of constraints) {
+      let exists = dbConstraints.find(c => constraint.Constraint.contype === contraintMap[c.constraint_type]);
+
+      if (!exists) {
+        if (constraint.Constraint.contype === "CONSTR_NOTNULL" && column.is_nullable === "NO") {
+          // we all good, column is not null
+          continue;
+        }
+
+        console.log(
+          chalk.yellowBright.bold(
+            ` ${figures.warning} Constraint ${constraint.Constraint.contype} does not exist on ${schemaName}.${tableName} for column ${column.column_name}`
+          )
+        );
+
+        return false;
+      }
+    }
+  }
+  return true;
+}
