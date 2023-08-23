@@ -1,5 +1,5 @@
 {
-  "name": "@joe-blow/migrate-elephants",
+  "name": "migrate-elephants",
   "version": "0.1.0",
   "description": "mobile elephants",
   "type": "module",
