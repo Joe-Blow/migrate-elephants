@@ -1,6 +1,6 @@
 {
-  "name": "migrate-elephants",
-  "version": "1.0.0",
+  "name": "@joe-blow/migrate-elephants",
+  "version": "0.1.0",
   "description": "mobile elephants",
   "type": "module",
   "main": "bin/index.js",
@@ -8,9 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joe Miller",
-  "license": "ISC",
+  "license": "MIT",
   "bin": {
-    "migrate-elephants": "./bin/index.js"
+    "migrate-elephants": "bin/index.js"
   },
   "dependencies": {
     "arg": "^5.0.2",
@@ -19,5 +19,18 @@
     "figures": "^5.0.0",
     "pg": "^8.11.3",
     "pgsql-parser": "^13.5.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Joe-Blow/migrate-elephants.git"
+  },
+  "keywords": [
+    "migration",
+    "postgres",
+    "sql"
+  ],
+  "bugs": {
+    "url": "https://github.com/Joe-Blow/migrate-elephants/issues"
+  },
+  "homepage": "https://github.com/Joe-Blow/migrate-elephants#readme"
 }

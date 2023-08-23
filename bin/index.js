@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import "dotenv/config";
-import chalk from "chalk";
-import prs from "pgsql-parser";
 import arg from "arg";
-import fs from "fs";
+import chalk from "chalk";
+import "dotenv/config";
 import figures from "figures";
+import fs from "fs";
 import pg from "pg";
+import prs from "pgsql-parser";
 const { Pool } = pg;
 
 const parser = prs.parse;
@@ -169,12 +169,12 @@ for (let row of ast) {
         const shouldBeType = types[0]?.String.str;
         const dbColType = column.data_type;
 
+        // this a hack but who cares
         if (shouldBeType === "bigint" || shouldBeType === "bigserial" || shouldBeType === "int8") {
           continue;
         }
 
         if (dbColType !== shouldBeType && typeMap[dbColType] !== shouldBeType) {
-          // this a hack but who cares
           console.log(
             chalk.yellowBright.bold(
               ` ${figures.warning} Column ${column.column_name} on ${schemaName}.${tableName} is ${dbColType} should be ${shouldBeType}`
