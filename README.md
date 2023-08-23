@@ -20,7 +20,7 @@ Currently this tool only works with Postgres. It also does not support many of t
 
 ## Installation
 
-`npm install -g @joe-blow/migrate-elephants`
+`npm install -g migrate-elephants`
 
 ## Usage
 
