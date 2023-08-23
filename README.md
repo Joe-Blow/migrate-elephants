@@ -12,7 +12,7 @@ This tool will check types on columns as well as most constraints like UNIQUE an
 
 Sample output:
 
-![screen shot](https://github.com/Joe-Blow/migrate-elephants/raw/master/images/Screenshot.png)
+![screen shot](https://github.com/Joe-Blow/migrate-elephants/raw/main/images/Screenshot.png)
 
 ## What does it NOT do
 
